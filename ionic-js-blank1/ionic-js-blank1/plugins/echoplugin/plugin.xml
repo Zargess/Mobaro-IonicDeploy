@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    id="echoplugin"
+    version="0.1.0">
+
+    <js-module src="www/mobarotest.js" name="mobarotest">
+        <clobbers target="window.mobarotest" />
+    </js-module>
+
+    <!-- windows -->
+    <platform name="windows">
+        <js-module src="src/windows/mobarotestProxy.js" name="MobaroProxy">
+            <merges target="" />
+        </js-module>
+    </platform>
+</plugin>

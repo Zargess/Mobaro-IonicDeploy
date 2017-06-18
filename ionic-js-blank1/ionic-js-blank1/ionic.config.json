@@ -1,0 +1,10 @@
+{
+  "name": "A testing app",
+  "app_id": "7e4ab2f8",
+  "gulpDependantTasks": [
+    "sass"
+  ],
+  "gulpStartupTasks": [
+    "watch"
+  ]
+}
