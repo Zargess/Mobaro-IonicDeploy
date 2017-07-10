@@ -2,11 +2,10 @@ var server = "https://api.ionic.io";
 var snapshot = "616bee74-2f17-11e7-8d6e-fa54ca00d05b";
 var app_id = "7e4ab2f8";
 var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MGE4Mjg4NS1kNjhjLTQyNzktYjAyMy01MTRjOWM0MzgwNDIifQ.44qzbHmUSc85yo6KDAkXPbyJeZ-I2zRKWkMKvfsr6vM";
-
+var storage = Windows.Storage;
 function networkCall(endpoint, data, type, success, error) {
     WinJS.xhr({
-        type: type,
-        url: endpoint,
+        type: type,       url: endpoint,
         responseType: "json",
         data: JSON.stringify(data),
         headers: {
@@ -48,19 +47,76 @@ function DownloadFile(uriString, fileName) {
                 download = downloader.createDownload(uri, newFile);
                 promise = download.startAsync()
                     .then(function () {
-                        console.log("success");
-                    }, error, function () {
-                        console.log("progress");
+                        console.log("Download success");
+                    }, console.log, function () {
+                        console.log("Download progress");
                     });
-            }, error);
+            }, console.log);
     } catch (err) {
-        error("error", err);
+        console.log("Download error");
+        console.log(err);
     }
 };
 
+function getFileAsUint8Array(file) {
+    return storage.FileIO.readBufferAsync(file)
+        .then(function (buffer) {
+            //Read the file into a byte array
+            var fileContents = new Uint8Array(buffer.length);
+            var dataReader = storage.Streams.DataReader.fromBuffer(buffer);
+            dataReader.readBytes(fileContents);
+            dataReader.close();
+ 
+            return fileContents;
+        });
+}
 
-function error(err) {
-    console.log('err', err);
+function unzipAsync(filePath, replaceIfExists) {
+ 
+    var fileCollisionOption = replaceIfExists ?
+        storage.CreationCollisionOption.replaceExisting :
+        storage.CreationCollisionOption.failIfExists;
+    console.log("Starting the unzip of files")
+    return storage.StorageFile
+        .getFileFromPathAsync(filePath)
+        .then(getFileAsUint8Array)
+        .then(function (zipFileContents) {
+            //Create the zip data in memory
+            console.log("Got the contents");
+            var zip = new JSZip(zipFileContents);
+ 
+            //Extract files
+            var promises = [];
+            var lf = storage.ApplicationData.current.localFolder;
+            _.each(zip.files, function (zippedFile) {
+ 
+                //Create new file
+                promises.push(lf
+                    .createFileAsync(zippedFile.name, fileCollisionOption)
+                    .then(function (localStorageFile) {
+                        //Copy the zipped file's contents into the local storage file
+                        var fileContents = zip.file(zippedFile.name).asUint8Array();
+                        return storage.FileIO
+                            .writeBytesAsync(localStorageFile, fileContents);
+                    })
+                );
+            });
+            console.log("Done");
+            return WinJS.Promise.join(promises);
+        });
+}
+
+function unzip(fileName, replaceIfExists) {
+    var localFolder = storage.ApplicationData.current.localFolder;
+    localFolder
+        .getFileAsync(fileName)
+        .then(function(zipFile) {
+            zipFile.openReadAsync()
+                .then(function(rstream) {
+                    
+                })
+        }, console.log);
+    
 }
 
 cordova.commandProxy.add("Echo",{
@@ -98,6 +154,18 @@ cordova.commandProxy.add("Echo",{
             device: device_details
         };
 
-        networkCall(endpoint, json, "post", success, error);
+        networkCall(endpoint, json, "post", function(data) {
+            DownloadFile(data.url, "TestFile.zip");
+        }, error);
+    },
+    extract: function(success, error, app_id) {
+        console.log("unzipping file");
+        var file = "TestFile.zip";
+        var local = storage.ApplicationData.current.localFolder;
+        var archivePath = local.path.concat('\\').concat(file);
+        console.log(archivePath);
+        unzip(file, true);
+        //runTest();
+        //unzipAsync(archivePath, true).then(function (file) { console.log("Unzip successfull"); });
     }
 });

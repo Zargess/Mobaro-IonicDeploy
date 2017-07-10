@@ -22,15 +22,21 @@ angular.module('starter', ['ionic'])
     }
   });
 })
-
+var active = false;
 
 $(document).ready(function () {
+    if (active) return;
     document.getElementById("btn").addEventListener("click", check);
+    document.getElementById("extract-btn").addEventListener("click", function () {
+        window.extract("test", console.log, console.log);
+    });
+    active = true;
 });
 
 var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MGE4Mjg4NS1kNjhjLTQyNzktYjAyMy01MTRjOWM0MzgwNDIifQ.44qzbHmUSc85yo6KDAkXPbyJeZ-I2zRKWkMKvfsr6vM"
 
 function check() {
+    console.log("Clicked")
     var deployed_version = "";
     var channel_tag = "production";
     //postDeviceDetails(deployed_version, channel_tag);

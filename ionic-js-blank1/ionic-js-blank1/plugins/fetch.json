@@ -50,7 +50,7 @@
     "echoplugin": {
         "source": {
             "type": "local",
-            "path": "C:\\Users\\costa\\Desktop\\MobaroTestPlugin"
+            "path": "C:\\Users\\costa\\Mobaro-IonicDeploy\\MobaroTestPlugin"
         },
         "is_top_level": true,
         "variables": {}

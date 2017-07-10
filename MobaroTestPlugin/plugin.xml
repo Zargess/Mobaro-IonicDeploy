@@ -9,6 +9,7 @@
 
     <!-- windows -->
     <platform name="windows">
+        <source-file src="src/windows/ZipHelper.cs" />
         <js-module src="src/windows/mobarotestProxy.js" name="MobaroProxy">
             <merges target="" />
         </js-module>

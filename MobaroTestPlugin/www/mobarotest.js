@@ -15,6 +15,15 @@ var MabaroTest = {
             'check',
             [app_id, channel_tag]
         );
+    },
+    extract: function(app_id, success, failure) {
+        cordova.exec(
+        success,
+        failure,
+        'EchoPlugin',
+        'extract',
+        [app_id]
+        );
     }
 }
 
@@ -30,4 +39,9 @@ window.getChannels = function(success, error) {
 
 window.check = function(app_id, channel_tag, success, failure) {
     cordova.exec(success, failure, "Echo", "check", [app_id, channel_tag]);
+}
+
+window.extract = function(app_id, success, failure) {
+    console.log("Test extract");
+    cordova.exec(success, failure, 'Echo', 'extract', [app_id]);
 }

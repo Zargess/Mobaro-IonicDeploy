@@ -81,5 +81,5 @@
     <icon src="resources/windows/icon/logo71x71.scale-100.png" width="71" height="71" />
     <icon src="resources/windows/icon/wide310x150.scale-100.png" width="310" height="150" />
   </platform>
-  <plugin name="echoplugin" version="0.1.0" src="C:\Users\costa\Desktop\MobaroTestPlugin" />
+  <plugin name="echoplugin" version="0.1.0" src="C:\Users\costa\Mobaro-IonicDeploy\MobaroTestPlugin" />
 </widget>
