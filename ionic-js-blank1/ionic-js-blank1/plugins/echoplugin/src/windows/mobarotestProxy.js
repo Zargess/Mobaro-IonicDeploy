@@ -112,29 +112,25 @@ function unzipAsync(filePath, replaceIfExists) {
         });
 }
 
-function createFolderRecursive(folder, parts) {
-    console.log("Inside the recursive function");
-    console.log(folder.path);
-    console.log(parts);
+function createFolderRecursive(folder, parts, success) {
     if (parts.length <= 1) {
-        return;
+        success(folder);
+    } else {
+        folder.createFolderAsync(parts[0], storage.CreationCollisionOption.openIfExists)
+            .then(function(newFolder) {
+                parts.splice(0,1);
+                createFolderRecursive(newFolder, parts, success);
+            }, console.log);
     }
-    console.log("Before create");
-    folder.createFolderAsync(parts[0], storage.CreationCollisionOption.openIfExists)
-        .then(function(newFolder) {
-            console.log(newFolder.path);
-            parts.splice(0,1);
-            createFolderRecursive(newFolder, parts);
-        }, console.log);
-    console.log("-----------------------------------")
 }
 
-function createFolders(folder, path) {
-    var parts = path.split("\\");
+function createFolders(folder, path, success) {
+    var parts = path.split("/");
     if (parts.length <= 1) {
-        return;
+        success(folder);
+    } else {
+        createFolderRecursive(folder, parts, success);
     }
-    createFolderRecursive(folder, parts);
 }
 
 function unzip(filepath, folder, replaceIfExists) {
@@ -150,13 +146,23 @@ function unzip(filepath, folder, replaceIfExists) {
             JSZip.loadAsync(zipFileContents)
                 .then(function(zip) {
                     var promises = [];
-                    console.log("Before loop")
                     zip.forEach(function(zippedFile) {
-                        console.log("File name: " + zippedFile);
-                        folder.createFileAsync(zippedFile, fileCollisionOption) // TODO : Create recursive folder structure
-                            .then(function(localStorageFile) {
-                                console.log(localStorageFile.path);
-                            }, console.log);
+                        createFolders(folder, zippedFile, function(targetFolder) {
+                            var parts = zippedFile.split("/");
+                            var filename = parts[parts.length - 1];
+                            
+                            targetFolder.createFileAsync(filename, fileCollisionOption) // TODO : Create recursive folder structure
+                                .then(function(localStorageFile) {
+                                    console.log("before getting contents of: " + zippedFile);
+                                    zip.file(zippedFile)
+                                        .async("uint8array")
+                                        .then(function(fileContents) {
+                                            console.log("Got file contents for: " + localStorageFile.name);
+                                            return storage.FileIO.writeBytesAsync(localStorageFile, fileContents);
+                                        });
+                                }, console.log);
+
+                        });
                         //console.log(zip.file(zippedFile));
                         /*promises.push(folder.createFileAsync(zippedFile, fileCollisionOption)
                         .then(function(localStorageFile) {
@@ -165,12 +171,8 @@ function unzip(filepath, folder, replaceIfExists) {
                                 .writeBytesAsync(localStorageFile, fileContents);
                         }, console.log));*/
                     });
-                    console.log("After loop");
                     return WinJS.Promise.join(promises);
-                }, function(err) {
-                    console.log("Bar");
-                    console.log(err);
-                });
+                }, console.log);
         });
     
 }
@@ -221,39 +223,6 @@ cordova.commandProxy.add("Echo",{
         //unzip(file, true);
         //runTest();
         //unzipAsync(archivePath, true).then(function (file) { console.log("Unzip successfull"); });
-        //unzip(archivePath);
-
-        var test = "this\\is\\a\\test\\folder\\withfile.txt";
-        console.log(test);
-        createFolders(local, test);
+        unzip(archivePath, local, true);
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
