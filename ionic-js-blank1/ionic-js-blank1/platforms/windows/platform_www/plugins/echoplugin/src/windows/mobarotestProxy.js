@@ -64,7 +64,6 @@ function DownloadFile(uriString, fileName) {
 function getFileAsUint8Array(file) {
     return storage.FileIO.readBufferAsync(file)
         .then(function (buffer) {
-            //Read the file into a byte array
             var fileContents = new Uint8Array(buffer.length);
             var dataReader = storage.Streams.DataReader.fromBuffer(buffer);
             dataReader.readBytes(fileContents);
@@ -72,45 +71,6 @@ function getFileAsUint8Array(file) {
  
             return fileContents;
         });
-}
-
-function unzipAsync(filePath, replaceIfExists) {
- 
-    var fileCollisionOption = replaceIfExists ?
-        storage.CreationCollisionOption.replaceExisting :
-        storage.CreationCollisionOption.failIfExists;
-    console.log("Starting the unzip of files");
-    return storage.StorageFile
-        .getFileFromPathAsync(filePath)
-        .then(getFileAsUint8Array)
-        .then(function (zipFileContents) {
-            //Create the zip data in memory
-            console.log(zipFileContents);
-            console.log("Got the contents");
-            var zip = new JSZip(zipFileContents);
-            console.log(zip.files);
- 
-            //Extract files
-            var promises = [];
-            var lf = storage.ApplicationData.current.localFolder;
-            _.each(zip.files, function (zippedFile) {
-                console.log("file: " + zippedFile.name);
-                //Create new file
-                promises.push(lf
-                    .createFileAsync(zippedFile.name, fileCollisionOption)
-                    .then(function (localStorageFile) {
-                        //Copy the zipped file's contents into the local storage file
-                        console.log("Before file contents");
-                        var fileContents = zip.file(zippedFile.name).asUint8Array();
-                        console.log("After file contents");
-                        return storage.FileIO
-                            .writeBytesAsync(localStorageFile, fileContents);
-                    })
-                );
-            });
-            console.log("Done");
-            return WinJS.Promise.join(promises);
-        });
 }
 
 function createFolderRecursive(folder, parts, success) {
@@ -135,7 +95,6 @@ function createFolders(folder, path, success) {
 }
 
 function unzip(filepath, folder, replaceIfExists) {
-
     var fileCollisionOption = replaceIfExists ?
         storage.CreationCollisionOption.replaceExisting :
         storage.CreationCollisionOption.failIfExists;
@@ -152,25 +111,16 @@ function unzip(filepath, folder, replaceIfExists) {
                             var parts = zippedFile.split("/");
                             var filename = parts[parts.length - 1];
                             
-                            targetFolder.createFileAsync(filename, fileCollisionOption) // TODO : Create recursive folder structure
+                            targetFolder.createFileAsync(filename, fileCollisionOption)
                                 .then(function(localStorageFile) {
-                                    console.log("before getting contents of: " + zippedFile);
                                     zip.file(zippedFile)
                                         .async("uint8array")
                                         .then(function(fileContents) {
-                                            console.log("Got file contents for: " + localStorageFile.name);
                                             return storage.FileIO.writeBytesAsync(localStorageFile, fileContents);
                                         });
                                 }, console.log);
 
                         });
-                        //console.log(zip.file(zippedFile));
-                        /*promises.push(folder.createFileAsync(zippedFile, fileCollisionOption)
-                        .then(function(localStorageFile) {
-                            var fileContents = zip.file(zippedFile).asUint8Array();
-                            return storage.FileIO
-                                .writeBytesAsync(localStorageFile, fileContents);
-                        }, console.log));*/
                     });
                     return WinJS.Promise.join(promises);
                 }, console.log);
@@ -221,9 +171,6 @@ cordova.commandProxy.add("Echo",{
         var file = "TestFile.zip";
         var local = storage.ApplicationData.current.localFolder;
         var archivePath = local.path.concat('\\').concat(file);
-        //unzip(file, true);
-        //runTest();
-        //unzipAsync(archivePath, true).then(function (file) { console.log("Unzip successfull"); });
         unzip(archivePath, local, true);
     }
 });
