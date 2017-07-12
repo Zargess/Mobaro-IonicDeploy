@@ -25,6 +25,7 @@ angular.module('starter', ['ionic'])
 var active = false;
 
 $(document).ready(function () {
+    console.log("foo");
     if (active) return;
     document.getElementById("btn").addEventListener("click", check);
     document.getElementById("extract-btn").addEventListener("click", function () {

@@ -78,6 +78,11 @@ module.exports = [
         ]
     },
     {
+        "file": "plugins/echoplugin/src/windows/jszip.min.js",
+        "id": "echoplugin.JSZip",
+        "pluginId": "echoplugin"
+    },
+    {
         "file": "plugins/echoplugin/src/windows/mobarotestProxy.js",
         "id": "echoplugin.MobaroProxy",
         "pluginId": "echoplugin",
